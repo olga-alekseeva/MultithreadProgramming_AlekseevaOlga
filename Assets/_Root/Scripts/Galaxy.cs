@@ -36,24 +36,30 @@ public class Galaxy : MonoBehaviour
         }
         _transformAccessArray = new TransformAccessArray(transforms);
 
+        
+    }
+    private void OnDestroy()
+    {
         _transformAccessArray.Dispose();
         _positions.Dispose();
         _velocities.Dispose();
         _accelerations.Dispose();
         _masses.Dispose();
+
     }
     private void Update()
     {
-        GravitationJob gravitationJob = new GravitationJob();
+        GravitationJob gravitationJob = new GravitationJob()
 
         {
-            gravitationJob.Positions = _positions;
-            gravitationJob.Velocities = _velocities;
-            gravitationJob.Accelerations = _accelerations;
-            gravitationJob.Masses = _masses;
-            gravitationJob.GravitationModifier = _gra
+            Positions = _positions,
+            Velocities = _velocities,
+            Accelerations = _accelerations,
+            Masses = _masses,
+            GravitationModifier = _gravitationModifier,
+            DeltaTime = Time.deltaTime
 
-        }
+        };
     }
 }
 
