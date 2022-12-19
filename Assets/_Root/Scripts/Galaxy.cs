@@ -49,7 +49,6 @@ public class Galaxy : MonoBehaviour
             Masses = _masses,
             GravitationModifier = _gravitationModifier,
             DeltaTime = Time.deltaTime
-
         };
         JobHandle gravitationHandle = gravitationJob.Schedule(_numberOfEntities, 0);
         MoveJob moveJob = new MoveJob()
