@@ -2,7 +2,6 @@ using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;
-using UnityEngine.UIElements;
 
 public class Galaxy : MonoBehaviour
 {
@@ -29,31 +28,48 @@ public class Galaxy : MonoBehaviour
         {
             _positions[i] = Random.insideUnitSphere * Random.Range(0, _startDistance);
             _velocities[i] = Random.insideUnitSphere * Random.Range(0, _startVelocity);
-            _accelerations[i] = new Vector3();
+            _accelerations[i] = Vector3.zero;
             _masses[i] = Random.Range(1, _startMass);
 
-            transforms[i] = Instantiate(_celestialBodyPrefab).transform;
+            transforms[i] = Instantiate(_celestialBodyPrefab, 
+                _positions[i], Quaternion.identity).transform;
         }
         _transformAccessArray = new TransformAccessArray(transforms);
 
-        _transformAccessArray.Dispose();
+
+    }
+    private void Update()
+    {
+        GravitationJob gravitationJob = new GravitationJob()
+
+        {
+            Positions = _positions,
+            Velocities = _velocities,
+            Accelerations = _accelerations,
+            Masses = _masses,
+            GravitationModifier = _gravitationModifier,
+            DeltaTime = Time.deltaTime
+        };
+        JobHandle gravitationHandle = gravitationJob.Schedule(_numberOfEntities, 0);
+        MoveJob moveJob = new MoveJob()
+        {
+            Positions = _positions,
+            Velocities = _velocities,
+            Accelerations = _accelerations,
+
+            DeltaTime = Time.deltaTime
+        };
+        JobHandle moveHandle = moveJob.Schedule(_transformAccessArray, gravitationHandle);
+        moveHandle.Complete();
+    }
+    private void OnDestroy()
+    {
         _positions.Dispose();
         _velocities.Dispose();
         _accelerations.Dispose();
         _masses.Dispose();
-    }
-    private void Update()
-    {
-        GravitationJob gravitationJob = new GravitationJob();
+        _transformAccessArray.Dispose();
 
-        {
-            gravitationJob.Positions = _positions;
-            gravitationJob.Velocities = _velocities;
-            gravitationJob.Accelerations = _accelerations;
-            gravitationJob.Masses = _masses;
-            gravitationJob.GravitationModifier = _gra
-
-        }
     }
 }
 
