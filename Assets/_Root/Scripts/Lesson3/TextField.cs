@@ -14,18 +14,25 @@ public class TextField : MonoBehaviour
     {
         scrollbar.onValueChanged.AddListener((float value) => UpdateText());
     }
+    private void ClampList(int maxCount)
+    {
+        while (messages.Count > maxCount)
+        {
+            messages.RemoveAt(0);
+        }
+    }
     public void ReceiveMessage(object message)
     {
         messages.Add(message.ToString());
-        float value = (messages.Count - 1) * scrollbar.value;
-        scrollbar.value = Mathf.Clamp(value, 0, 1);
+        //float value = (messages.Count - 1) * scrollbar.value;
+        //scrollbar.value = Mathf.Clamp(value, 0, 1);
         UpdateText();
     }
     private void UpdateText()
     {
         string text = "";
-        int index = (int)(messages.Count * scrollbar.value);
-        for (int i = index; i < messages.Count; i++)
+      //  int index = (int)(messages.Count * scrollbar.value);
+        for (int i = 0; i < messages.Count; i++)
         {
             text += messages[i] + "\n";
         }

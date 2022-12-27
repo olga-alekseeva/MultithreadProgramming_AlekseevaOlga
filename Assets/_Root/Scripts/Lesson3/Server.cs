@@ -12,6 +12,23 @@ public class Server : MonoBehaviour
     private bool isStarted = false;
     private byte error;
     List<int> connectionIDs = new List<int>();
+    private Dictionary<int, string> connectionNames = new Dictionary<int, string>();
+    private void SetConnectionName(int id, string name)
+    {
+        connectionNames.Add(id, name);
+    }
+    private string GetConnectionName(int id)
+    {
+        if (connectionNames.ContainsKey(id))
+        {
+            return connectionNames[id];
+        }
+        else
+        {
+            return id.ToString();
+        }
+    }
+
     public void StartServer()
     {
         NetworkTransport.Init();
@@ -48,7 +65,6 @@ public class Server : MonoBehaviour
     void Update()
     {
         if (!isStarted) return;
-
         int recHostId;
         int connectionId;
         int channelId;
@@ -57,34 +73,39 @@ public class Server : MonoBehaviour
         int dataSize;
         NetworkEventType recData = NetworkTransport.Receive(out recHostId, out connectionId, out
         channelId, recBuffer, bufferSize, out dataSize, out error);
-
         while (recData != NetworkEventType.Nothing)
         {
             switch (recData)
             {
                 case NetworkEventType.Nothing:
                     break;
-
                 case NetworkEventType.ConnectEvent:
                     connectionIDs.Add(connectionId);
-                    SendMessageToAll($"Player {connectionId} has connected.");
+                    //SendMessageToAll(DataTransfer.GetMessage($"Player {connectionId} has connected."));
                     Debug.Log($"Player {connectionId} has connected.");
                     break;
                 case NetworkEventType.DataEvent:
                     string message = Encoding.Unicode.GetString(recBuffer, 0, dataSize);
-                    SendMessageToAll($"Player {connectionId}: {message}");
+                    MessageData messageData = DataTransfer.GetMessageData(message);
+                    if (messageData.messageType == MessageType.Message)
+                    {
+                        SendMessageToAll(DataTransfer.GetJsonMessage($"Player {GetConnectionName(connectionId)}: {messageData.MessageValue}"));
+                    }
+                    else if (messageData.messageType == MessageType.PlayerName)
+                    {
+                        SetConnectionName(connectionId, messageData.MessageValue);
+                        SendMessageToAll(DataTransfer.GetJsonMessage($"Player {messageData.MessageValue} has connected."));
+                    }
                     Debug.Log($"Player {connectionId}: {message}");
                     break;
                 case NetworkEventType.DisconnectEvent:
                     connectionIDs.Remove(connectionId);
-                    SendMessageToAll($"Player {connectionId} has disconnected.");
+                    SendMessageToAll(DataTransfer.GetJsonMessage($"Player {GetConnectionName(connectionId)} has disconnected."));
                     Debug.Log($"Player {connectionId} has disconnected.");
                     break;
                 case NetworkEventType.BroadcastEvent:
-
                     break;
             }
-
             recData = NetworkTransport.Receive(out recHostId, out connectionId, out channelId, recBuffer,
             bufferSize, out dataSize, out error);
         }

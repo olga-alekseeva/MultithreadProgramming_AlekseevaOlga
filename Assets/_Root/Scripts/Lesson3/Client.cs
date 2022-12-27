@@ -13,7 +13,8 @@ public class Client : MonoBehaviour
     private int connectionID;
     private bool isConnected = false;
     private byte error;
-    public void Connect()
+    private string _playerName;
+    public void Connect(string playerName)
     {
         NetworkTransport.Init();
         ConnectionConfig cc = new ConnectionConfig();
@@ -22,7 +23,10 @@ public class Client : MonoBehaviour
         hostID = NetworkTransport.AddHost(topology, port);
         connectionID = NetworkTransport.Connect(hostID, "127.0.0.1", serverPort, 0, out error);
         if ((NetworkError)error == NetworkError.Ok)
+        {
             isConnected = true;
+            _playerName = playerName;
+        }
         else
             Debug.Log((NetworkError)error);
     }

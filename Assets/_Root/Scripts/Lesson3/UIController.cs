@@ -23,6 +23,8 @@ public class UIController : MonoBehaviour
     private Server server;
     [SerializeField]
     private Client client;
+    [SerializeField]
+    private TMP_InputField playerName;
     private void Start()
     {
         buttonStartServer.onClick.AddListener(() => StartServer());
@@ -42,7 +44,7 @@ public class UIController : MonoBehaviour
     }
     private void Connect()
     {
-        client.Connect();
+        client.Connect(playerName.text);
     }
     private void Disconnect()
     {
@@ -56,5 +58,9 @@ public class UIController : MonoBehaviour
     public void ReceiveMessage(object message)
     {
         textField.ReceiveMessage(message);
+    }
+    private void Update()
+    {
+        buttonConnectClient.interactable = playerName.text != string.Empty;
     }
 }
